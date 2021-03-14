@@ -7,3 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[profile.release]
+opt-level = 3
+debug = 0
+overflow-checks = false
+lto = "fat"
+codegen-units = 1

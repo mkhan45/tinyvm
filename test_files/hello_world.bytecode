@@ -1,47 +1,68 @@
--- H
-Push 72
-PrintC
+Proc printStr
+    -- [..., i | ]
+    GetArg 1
+    -- [..., last_char, i | last_char ]
+    PrintC
+    Pop
+    -- [..., last_char, i | ]
+    SetArg 1
+    -- [..., i - 1, i| ]
+    Pop
+    -- [..., i | ]
+    Push 1
+    -- [..., i | 1 ]
+    Sub
+    -- [..., i - 1 ]
 
--- e
-Push 101
-PrintC
+    GetArg 1
+    JE finish
+    JNE continue
 
--- l
-Push 108
-PrintC
+    label finish
+        Ret
 
--- l
-Push 108
-PrintC
-
--- o
-Push 111
-PrintC
-
--- space
-Push 32
-PrintC
-
--- W
-Push 87
-PrintC
-
--- o
-Push 111
-PrintC
-
--- r
-Push 114
-PrintC
-
--- l
-Push 108
-PrintC
-
--- d
-Push 100
-PrintC
+    label continue 
+        Call printStr
+        Ret
+End
 
 -- \n
 Push 10
-PrintC
+
+-- d
+Push 100
+
+-- l
+Push 108
+
+-- r
+Push 114
+
+-- o
+Push 111
+
+-- W
+Push 87
+
+-- space
+Push 32
+
+-- o
+Push 111
+
+-- l
+Push 108
+
+-- l
+Push 108
+
+-- e
+Push 101
+
+-- H
+Push 72
+
+-- string length
+Push 12
+
+Call printStr

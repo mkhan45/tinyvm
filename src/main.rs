@@ -40,6 +40,10 @@ enum Inst {
     Jump(Pointer),
     JE(Pointer),
     JNE(Pointer),
+    JGT(Pointer),
+    JLT(Pointer),
+    JGE(Pointer),
+    JLE(Pointer),
     Get(Pointer),
     Set(Pointer),
     GetArg(Pointer),
@@ -52,7 +56,7 @@ enum Inst {
     Ret,
 }
 
-fn interpret<'a>(program: Program<'a>) -> isize {
+fn interpret<'a>(program: Program<'a>) {
     use Inst::*;
 
     let mut stack: Stack = Stack(Vec::new());
@@ -63,6 +67,7 @@ fn interpret<'a>(program: Program<'a>) -> isize {
         pointer += 1;
 
         match instruction {
+            Noop => {}
             Push(d) => stack.push(*d),
             Pop => {
                 stack.pop();
@@ -92,6 +97,30 @@ fn interpret<'a>(program: Program<'a>) -> isize {
             }
             JNE(p) => {
                 if stack.peek() != 0 {
+                    stack.pop();
+                    pointer = *p;
+                }
+            }
+            JGT(p) => {
+                if stack.peek() > 0 {
+                    stack.pop();
+                    pointer = *p;
+                }
+            }
+            JLT(p) => {
+                if stack.peek() < 0 {
+                    stack.pop();
+                    pointer = *p;
+                }
+            }
+            JGE(p) => {
+                if stack.peek() >= 0 {
+                    stack.pop();
+                    pointer = *p;
+                }
+            }
+            JLE(p) => {
+                if stack.peek() <= 0 {
                     stack.pop();
                     pointer = *p;
                 }
@@ -128,11 +157,8 @@ fn interpret<'a>(program: Program<'a>) -> isize {
                 pointer = *p;
             }
             Ret => pointer = call_stack.pop().unwrap().ip,
-            Noop => {}
         }
     }
-
-    stack.pop()
 }
 
 fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> Inst {
@@ -148,6 +174,10 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Jump", l] => Jump(*labels.get(l).unwrap()),
         ["JE", l] => JE(*labels.get(l).unwrap()),
         ["JNE", l] => JNE(*labels.get(l).unwrap()),
+        ["JGE", l] => JGE(*labels.get(l).unwrap()),
+        ["JLE", l] => JLE(*labels.get(l).unwrap()),
+        ["JGT", l] => JGT(*labels.get(l).unwrap()),
+        ["JLT", l] => JLT(*labels.get(l).unwrap()),
         ["Get", p] => Get(p.parse::<Pointer>().unwrap()),
         ["Set", p] => Set(p.parse::<Pointer>().unwrap()),
         ["GetArg", p] => GetArg(p.parse::<Pointer>().unwrap()),
