@@ -28,5 +28,7 @@ Runs a very simple instruction set and is Turing Complete.
 In `test_files/`:
 
 `hello_world.bytecode` prints "Hello World"
+
 `sum.bytecode` prints the sum of all integers from 0 to 100
+
 `fib.bytecode` prints the first 40 fibonacci numbers
