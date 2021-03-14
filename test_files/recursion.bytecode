@@ -2,7 +2,7 @@ Proc factorial
     JE retOne
 
     -- [x]
-    Get 0
+    GetArg 0
     Push 1
     Sub
     -- [x, x - 1]

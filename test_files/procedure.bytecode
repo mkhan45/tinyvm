@@ -10,7 +10,7 @@ Proc addMul
 End
 
 Proc square
-    Get 0
+    GetArg 0
     Mul
     Ret
 End

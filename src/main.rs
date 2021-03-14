@@ -6,7 +6,7 @@ type Program<'a> = &'a [Inst];
 type Label<'a> = (&'a str, Pointer);
 type Labels<'a> = BTreeMap<&'a str, Pointer>;
 type Procedures<'a> = BTreeMap<&'a str, (Pointer, Pointer)>;
-type CallStack = Vec<Pointer>;
+type CallStack = Vec<StackFrame>;
 
 struct Stack(Vec<isize>);
 
@@ -24,6 +24,11 @@ impl Stack {
     }
 }
 
+struct StackFrame {
+    pub stack_offset: Pointer,
+    pub ip: Pointer,
+}
+
 #[derive(Debug)]
 enum Inst {
     Push(isize),
@@ -37,6 +42,8 @@ enum Inst {
     JNE(Pointer),
     Get(Pointer),
     Set(Pointer),
+    GetArg(Pointer),
+    SetArg(Pointer),
     Noop,
     Print,
     PrintC,
@@ -89,24 +96,38 @@ fn interpret<'a>(program: Program<'a>) -> isize {
                     pointer = *p;
                 }
             }
-            Get(i) => stack.push(*stack.0.get(stack.0.len() - 1 - i).expect(&format!(
+            Get(i) => stack.push(*stack.0.get(*i).expect(&format!(
                 "Tried to access index {} with stack of length {}",
                 i,
                 stack.0.len(),
             ))),
-            Set(i) => {
-                let t = stack.peek();
-                let new_i = stack.0.len() - 1 - i;
-                *stack.0.get_mut(new_i).unwrap() = t;
+            Set(i) => *stack.0.get_mut(*i).unwrap() = stack.peek(),
+            GetArg(i) => stack.push(
+                *stack
+                    .0
+                    .get(call_stack.last().unwrap().stack_offset - 1 - *i)
+                    .expect(&format!(
+                        "Tried to access index {} with stack of length {}",
+                        call_stack.last().unwrap().stack_offset - *i,
+                        stack.0.len(),
+                    )),
+            ),
+            SetArg(i) => {
+                let offset_i = call_stack.last().unwrap().stack_offset - 1 - *i;
+                let new_val = stack.peek();
+                *stack.0.get_mut(offset_i).unwrap() = new_val;
             }
             Print => print!("{}", stack.peek()),
             PrintC => print!("{}", stack.peek() as u8 as char),
             PrintStack => println!("{:?}", stack.0),
             Call(p) => {
-                call_stack.push(pointer);
+                call_stack.push(StackFrame {
+                    stack_offset: stack.0.len(),
+                    ip: pointer,
+                });
                 pointer = *p;
             }
-            Ret => pointer = call_stack.pop().unwrap(),
+            Ret => pointer = call_stack.pop().unwrap().ip,
             Noop => {}
         }
     }
@@ -129,6 +150,8 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["JNE", l] => JNE(*labels.get(l).unwrap()),
         ["Get", p] => Get(p.parse::<Pointer>().unwrap()),
         ["Set", p] => Set(p.parse::<Pointer>().unwrap()),
+        ["GetArg", p] => GetArg(p.parse::<Pointer>().unwrap()),
+        ["SetArg", p] => SetArg(p.parse::<Pointer>().unwrap()),
         ["Print"] => Print,
         ["PrintC"] => PrintC,
         ["PrintStack"] => PrintStack,
