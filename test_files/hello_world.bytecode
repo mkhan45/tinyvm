@@ -1,0 +1,47 @@
+-- H
+Push 72
+PrintC
+
+-- e
+Push 101
+PrintC
+
+-- l
+Push 108
+PrintC
+
+-- l
+Push 108
+PrintC
+
+-- o
+Push 111
+PrintC
+
+-- space
+Push 32
+PrintC
+
+-- W
+Push 87
+PrintC
+
+-- o
+Push 111
+PrintC
+
+-- r
+Push 114
+PrintC
+
+-- l
+Push 108
+PrintC
+
+-- d
+Push 100
+PrintC
+
+-- \n
+Push 10
+PrintC

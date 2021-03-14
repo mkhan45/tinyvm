@@ -1,0 +1,33 @@
+Push 1
+Push 1
+Push 0
+Push 0
+-- [a, b, i]
+Get 0
+Get 1
+-- [a, b, i, a, b]
+Set 0
+-- [b, b, i, a, b]
+Add
+-- [b, b, i, a + b]
+Set 1
+Pop
+-- [b, a + b, i]
+
+-- print a\n
+Get 0
+Print
+Pop
+Push 10
+PrintC
+Pop
+
+-- Add 1 to index
+Get 2
+Push 1
+Add
+Set 2
+-- index on top, jump to start of loop if not 40
+Push 40
+Sub
+JNE 5

@@ -1,0 +1,26 @@
+Push 0
+Push 0
+
+-- accumulator is 0
+-- index is 1
+
+-- adds index to accumulator
+Get 0
+Get 1
+Add
+Set 0
+Pop
+
+-- adds one to index
+Get 1
+Push 1
+Add
+Set 1
+-- index is on top of the stack
+
+-- if index is 10000, jump back to line 7
+Push 10000
+Sub
+JNE 7
+Get 0
+Print
