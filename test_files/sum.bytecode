@@ -1,29 +1,32 @@
 Push 0
 Push 0
 
--- accumulator is 0
--- index is 1
-
--- adds index to accumulator
 label loop
+-- [accumulator, index]
 Get 0
-Get 1
+Get 2
+-- [accumulator, index, accumulator, index]
 Add
-Set 0
+-- [accumulator, index, accumulator + index]
+Set 2
 Pop
+-- [accumulator + index, index]
 
+-- [accumulator, index]
 -- adds one to index
-Get 1
 Push 1
 Add
-Set 1
--- index is on top of the stack
+-- [accumulator, index + 1]
 
--- if index is 10000, jump back to line 7
-Push 10000
-Sub
-JNE loop
+-- [accumulator, index]
 Get 0
+Push 100
+Sub
+-- [accumulator, index, index - 1000]
+JNE loop
+Pop
+
+Get 1
 Print
 Push 10
 PrintC

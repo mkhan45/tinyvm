@@ -4,6 +4,7 @@ Runs a very simple instruction set and is Turing Complete.
 
 ## Instructions
 
+Pointer accessing instructions are indexed from top of stack
 
 | Instruction         | Description                                                                                |
 |---------------------|--------------------------------------------------------------------------------------------|

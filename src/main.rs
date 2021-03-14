@@ -5,6 +5,8 @@ type Pointer = usize;
 type Program<'a> = &'a [Inst];
 type Label<'a> = (&'a str, Pointer);
 type Labels<'a> = BTreeMap<&'a str, Pointer>;
+type Procedures<'a> = BTreeMap<&'a str, (Pointer, Pointer)>;
+type CallStack = Vec<Pointer>;
 
 struct Stack(Vec<isize>);
 
@@ -39,6 +41,8 @@ enum Inst {
     Print,
     PrintC,
     PrintStack,
+    Call(Pointer),
+    Ret,
 }
 
 fn interpret<'a>(program: Program<'a>) -> isize {
@@ -46,6 +50,7 @@ fn interpret<'a>(program: Program<'a>) -> isize {
 
     let mut stack: Stack = Stack(Vec::new());
     let mut pointer: Pointer = 0;
+    let mut call_stack = CallStack::new();
 
     while let Some(instruction) = program.get(pointer) {
         pointer += 1;
@@ -84,18 +89,24 @@ fn interpret<'a>(program: Program<'a>) -> isize {
                     pointer = *p;
                 }
             }
-            Get(i) => stack.push(*stack.0.get(*i).expect(&format!(
+            Get(i) => stack.push(*stack.0.get(stack.0.len() - 1 - i).expect(&format!(
                 "Tried to access index {} with stack of length {}",
                 i,
                 stack.0.len(),
             ))),
             Set(i) => {
                 let t = stack.peek();
-                *stack.0.get_mut(*i).unwrap() = t;
+                let new_i = stack.0.len() - 1 - i;
+                *stack.0.get_mut(new_i).unwrap() = t;
             }
             Print => print!("{}", stack.peek()),
             PrintC => print!("{}", stack.peek() as u8 as char),
             PrintStack => println!("{:?}", stack.0),
+            Call(p) => {
+                call_stack.push(pointer);
+                pointer = *p;
+            }
+            Ret => pointer = call_stack.pop().unwrap(),
             Noop => {}
         }
     }
@@ -103,7 +114,7 @@ fn interpret<'a>(program: Program<'a>) -> isize {
     stack.pop()
 }
 
-fn parse_instruction(s: &[&str], labels: &Labels) -> Inst {
+fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> Inst {
     use Inst::*;
 
     match s {
@@ -121,7 +132,10 @@ fn parse_instruction(s: &[&str], labels: &Labels) -> Inst {
         ["Print"] => Print,
         ["PrintC"] => PrintC,
         ["PrintStack"] => PrintStack,
-        [] | ["--", ..] | ["label", ..] => Noop,
+        ["Proc", proc] => Jump(procedures.get(proc).unwrap().1),
+        ["Call", proc] => Call(procedures.get(proc).unwrap().0 + 1),
+        ["Ret"] => Ret,
+        [] | ["--", ..] | ["label", ..] | ["End"] => Noop,
         l => panic!("Invalid instruction: {:?}", l),
     }
 }
@@ -132,6 +146,25 @@ fn find_label<'a>(i: Pointer, s: &'a [&'a str]) -> Option<Label> {
     } else {
         None
     }
+}
+
+fn find_procedures<'a>(lines: &'a [Vec<&str>]) -> Procedures<'a> {
+    let mut ip = 0;
+    let mut res = Procedures::new();
+
+    while ip < lines.len() {
+        if let ["Proc", proc_name] = lines[ip].as_slice() {
+            let start_ip = ip;
+            while lines[ip] != &["End"] {
+                ip += 1;
+            }
+            res.insert(proc_name, (start_ip, ip + 1));
+        } else {
+            ip += 1;
+        }
+    }
+
+    res
 }
 
 fn main() -> std::io::Result<()> {
@@ -152,9 +185,11 @@ fn main() -> std::io::Result<()> {
         .filter_map(|(i, s)| find_label(i, s.as_slice()))
         .collect();
 
+    let procedures: Procedures = find_procedures(line_splits.as_slice());
+
     let instructions: Vec<Inst> = line_splits
         .iter()
-        .map(|s| parse_instruction(s.as_slice(), &labels))
+        .map(|s| parse_instruction(s.as_slice(), &labels, &procedures))
         .collect();
 
     interpret(&instructions[..]);
