@@ -3,6 +3,7 @@ Push 1
 Push 0
 Push 0
 -- [a, b, i]
+label loop
 Get 0
 Get 1
 -- [a, b, i, a, b]
@@ -30,4 +31,4 @@ Set 2
 -- index on top, jump to start of loop if not 40
 Push 40
 Sub
-JNE 5
+JNE loop

@@ -1,7 +1,10 @@
+use std::collections::BTreeMap;
 use std::io::Read;
 
 type Pointer = usize;
 type Program<'a> = &'a [Inst];
+type Label<'a> = (&'a str, Pointer);
+type Labels<'a> = BTreeMap<&'a str, Pointer>;
 
 struct Stack(Vec<isize>);
 
@@ -100,26 +103,34 @@ fn interpret<'a>(program: Program<'a>) -> isize {
     stack.pop()
 }
 
-fn parse_instruction(s: &str) -> Inst {
+fn parse_instruction(s: &[&str], labels: &Labels) -> Inst {
     use Inst::*;
 
-    match s.split_whitespace().collect::<Vec<_>>().as_slice() {
+    match s {
         ["Push", x] => Push(x.parse::<isize>().unwrap()),
         ["Pop"] => Pop,
         ["Add"] => Add,
         ["Sub"] => Sub,
         ["Mul"] => Mul,
         ["Div"] => Div,
-        ["Jump", x] => Jump(x.parse::<Pointer>().unwrap()),
-        ["JE", x] => JE(x.parse::<Pointer>().unwrap()),
-        ["JNE", x] => JNE(x.parse::<Pointer>().unwrap()),
-        ["Get", x] => Get(x.parse::<Pointer>().unwrap()),
-        ["Set", x] => Set(x.parse::<Pointer>().unwrap()),
+        ["Jump", l] => Jump(*labels.get(l).unwrap()),
+        ["JE", l] => JE(*labels.get(l).unwrap()),
+        ["JNE", l] => JNE(*labels.get(l).unwrap()),
+        ["Get", p] => Get(p.parse::<Pointer>().unwrap()),
+        ["Set", p] => Set(p.parse::<Pointer>().unwrap()),
         ["Print"] => Print,
         ["PrintC"] => PrintC,
         ["PrintStack"] => PrintStack,
-        [] | ["--", ..] => Noop,
+        [] | ["--", ..] | ["label", ..] => Noop,
         l => panic!("Invalid instruction: {:?}", l),
+    }
+}
+
+fn find_label<'a>(i: Pointer, s: &'a [&'a str]) -> Option<Label> {
+    if let ["label", l] = s {
+        Some((l, i))
+    } else {
+        None
     }
 }
 
@@ -130,7 +141,21 @@ fn main() -> std::io::Result<()> {
     let mut buffer = String::new();
     f.read_to_string(&mut buffer)?;
 
-    let instructions: Vec<Inst> = buffer.split('\n').map(parse_instruction).collect();
+    let line_splits = buffer
+        .split('\n')
+        .map(|s| s.split_whitespace().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let labels: Labels = line_splits
+        .iter()
+        .enumerate()
+        .filter_map(|(i, s)| find_label(i, s.as_slice()))
+        .collect();
+
+    let instructions: Vec<Inst> = line_splits
+        .iter()
+        .map(|s| parse_instruction(s.as_slice(), &labels))
+        .collect();
 
     interpret(&instructions[..]);
 

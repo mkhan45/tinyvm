@@ -5,6 +5,7 @@ Push 0
 -- index is 1
 
 -- adds index to accumulator
+label loop
 Get 0
 Get 1
 Add
@@ -21,6 +22,8 @@ Set 1
 -- if index is 10000, jump back to line 7
 Push 10000
 Sub
-JNE 7
+JNE loop
 Get 0
 Print
+Push 10
+PrintC
