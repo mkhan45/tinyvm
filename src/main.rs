@@ -11,22 +11,18 @@ type CallStack = Vec<StackFrame>;
 struct Stack(Vec<isize>);
 
 impl Stack {
-    #[inline(always)]
     fn push(&mut self, v: isize) {
         self.0.push(v);
     }
 
-    #[inline(always)]
     fn pop(&mut self) -> isize {
         self.0.pop().expect("popped an empty stack")
     }
 
-    #[inline(always)]
     fn peek(&mut self) -> isize {
         *self.0.last().expect("peeked an empty stack")
     }
 
-    #[inline(always)]
     fn peek_mut(&mut self) -> &mut isize {
         self.0.last_mut().expect("peeked an empty stack")
     }
@@ -137,8 +133,18 @@ fn interpret<'a>(program: Program<'a>) {
                     pointer = *p;
                 }
             }
-            Get(i) => stack.push(*stack.0.get(*i).unwrap()),
-            Set(i) => *stack.0.get_mut(*i).unwrap() = stack.peek(),
+            Get(i) => stack.push(
+                *stack
+                    .0
+                    .get(*i + call_stack.last().map_or(0, |s| s.stack_offset))
+                    .unwrap(),
+            ),
+            Set(i) => {
+                *stack
+                    .0
+                    .get_mut(*i + call_stack.last().map_or(0, |s| s.stack_offset))
+                    .unwrap() = stack.peek()
+            }
             GetArg(i) => stack.push(
                 *stack
                     .0
