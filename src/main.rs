@@ -194,7 +194,7 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Proc", proc] => Jump(procedures.get(proc).unwrap().1),
         ["Call", proc] => Call(procedures.get(proc).unwrap().0 + 1),
         ["Ret"] => Ret,
-        [] | ["--", ..] | ["label", ..] | ["End"] => Noop,
+        ["label", ..] | ["End"] => Noop,
         l => panic!("Invalid instruction: {:?}", l),
     }
 }
@@ -236,6 +236,7 @@ fn main() -> std::io::Result<()> {
     let line_splits = buffer
         .split('\n')
         .map(|s| s.split_whitespace().collect::<Vec<_>>())
+        .filter(|s| !matches!(s.as_slice(), [] | ["--", ..]))
         .collect::<Vec<_>>();
 
     let labels: Labels = line_splits
