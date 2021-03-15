@@ -1,6 +1,5 @@
 Proc fib
-    Push 1
-    Sub
+    Decr
     JLE retOne
 
     -- [n - 1 |]
@@ -9,8 +8,7 @@ Proc fib
     Call fib
     -- [n - 1 | fib(n - 1)]
     GetArg 0
-    Push 1
-    Sub
+    Decr
     -- [n - 1 | fib(n - 1), n - 2]
     Call fib
     Add

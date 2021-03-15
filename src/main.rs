@@ -23,7 +23,12 @@ impl Stack {
 
     #[inline(always)]
     fn peek(&mut self) -> isize {
-        *self.0.last().expect("popped an empty stack")
+        *self.0.last().expect("peeked an empty stack")
+    }
+
+    #[inline(always)]
+    fn peek_mut(&mut self) -> &mut isize {
+        self.0.last_mut().expect("peeked an empty stack")
     }
 }
 
@@ -38,6 +43,8 @@ enum Inst {
     Pop,
     Add,
     Sub,
+    Incr,
+    Decr,
     Mul,
     Div,
     Jump(Pointer),
@@ -91,6 +98,8 @@ fn interpret<'a>(program: Program<'a>) {
                 let (a, b) = (stack.pop(), stack.pop());
                 stack.push(b / a)
             }
+            Incr => *stack.peek_mut() += 1,
+            Decr => *stack.peek_mut() -= 1,
             Jump(p) => pointer = *p,
             JE(p) => {
                 if stack.peek() == 0 {
@@ -166,6 +175,8 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Sub"] => Sub,
         ["Mul"] => Mul,
         ["Div"] => Div,
+        ["Incr"] => Incr,
+        ["Decr"] => Decr,
         ["Jump", l] => Jump(*labels.get(l).unwrap()),
         ["JE", l] => JE(*labels.get(l).unwrap()),
         ["JNE", l] => JNE(*labels.get(l).unwrap()),
