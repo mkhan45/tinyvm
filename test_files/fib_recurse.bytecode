@@ -13,9 +13,7 @@ Proc fib
     Call fib
     Add
     -- [n - 1 | fib(n - 1) + fib(n - 2)]
-    SetArg 0
-    Pop
-    Ret
+    CollapseRet 0
 
     label retOne
         Push 1

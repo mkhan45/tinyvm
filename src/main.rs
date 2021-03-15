@@ -64,6 +64,7 @@ enum Inst {
     PrintStack,
     Call(Pointer),
     Ret,
+    CollapseRet(Pointer),
 }
 
 fn interpret<'a>(program: Program<'a>) {
@@ -171,6 +172,13 @@ fn interpret<'a>(program: Program<'a>) {
                 pointer = *p;
             }
             Ret => pointer = call_stack.pop().unwrap().ip,
+            CollapseRet(p) => {
+                let sf = call_stack.pop().unwrap();
+                let v = stack.pop();
+                *stack.0.get_mut(sf.stack_offset - 1 - *p).unwrap() = v;
+                stack.0.truncate(sf.stack_offset - *p);
+                pointer = sf.ip;
+            }
         }
     }
 }
@@ -204,6 +212,7 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Proc", proc] => Jump(procedures.get(proc).unwrap().1),
         ["Call", proc] => Call(procedures.get(proc).unwrap().0 + 1),
         ["Ret"] => Ret,
+        ["CollapseRet", p] => CollapseRet(p.parse::<Pointer>().unwrap()),
         ["label", ..] | ["End"] => Noop,
         l => panic!("Invalid instruction: {:?}", l),
     }

@@ -14,10 +14,7 @@ Proc fibStep
     SetArg 1
     Pop
     -- [b, b, | b + a]
-    SetArg 0
-    Pop
-    -- [b, b + a | ]
-    Ret
+    CollapseRet 0
 End
 
 

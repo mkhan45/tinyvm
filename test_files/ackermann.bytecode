@@ -21,20 +21,14 @@ Proc ackermann
     Set 0
     Pop
     -- [m, n | A(m - 1, A(m, n - 1))]
-    SetArg 1
-    Pop
-    Pop
-    Ret
+    CollapseRet 1
 
     label m0
         -- [m, n |]
         GetArg 0
         Incr
         -- [m, n, | n + 1]
-        SetArg 1
-        Pop
-        Pop
-        Ret
+        CollapseRet 1
 
     label n0
         -- [m, n, | m]
@@ -46,13 +40,13 @@ Proc ackermann
         Pop
         -- [m, n, | m - 1, 1]
         Call ackermann
-        SetArg 1
-        Pop
-        Pop
-        Ret
+        CollapseRet 1
 End
 
 Push 3
 Push 10
 Call ackermann
-PrintStack
+Print
+
+Push 10
+PrintC
