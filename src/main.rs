@@ -137,8 +137,18 @@ fn interpret<'a>(program: Program<'a>) {
                     pointer = *p;
                 }
             }
-            Get(i) => stack.push(*stack.0.get(*i).unwrap()),
-            Set(i) => *stack.0.get_mut(*i).unwrap() = stack.peek(),
+            Get(i) => stack.push(
+                *stack
+                    .0
+                    .get(*i + call_stack.last().map_or(0, |s| s.stack_offset))
+                    .unwrap(),
+            ),
+            Set(i) => {
+                *stack
+                    .0
+                    .get_mut(*i + call_stack.last().map_or(0, |s| s.stack_offset))
+                    .unwrap() = stack.peek()
+            }
             GetArg(i) => stack.push(
                 *stack
                     .0
