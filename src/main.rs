@@ -11,14 +11,17 @@ type CallStack = Vec<StackFrame>;
 struct Stack(Vec<isize>);
 
 impl Stack {
+    #[inline(always)]
     fn push(&mut self, v: isize) {
         self.0.push(v);
     }
 
+    #[inline(always)]
     fn pop(&mut self) -> isize {
         self.0.pop().expect("popped an empty stack")
     }
 
+    #[inline(always)]
     fn peek(&mut self) -> isize {
         *self.0.last().expect("popped an empty stack")
     }
@@ -125,21 +128,13 @@ fn interpret<'a>(program: Program<'a>) {
                     pointer = *p;
                 }
             }
-            Get(i) => stack.push(*stack.0.get(*i).expect(&format!(
-                "Tried to access index {} with stack of length {}",
-                i,
-                stack.0.len(),
-            ))),
+            Get(i) => stack.push(*stack.0.get(*i).unwrap()),
             Set(i) => *stack.0.get_mut(*i).unwrap() = stack.peek(),
             GetArg(i) => stack.push(
                 *stack
                     .0
                     .get(call_stack.last().unwrap().stack_offset - 1 - *i)
-                    .expect(&format!(
-                        "Tried to access index {} with stack of length {}",
-                        call_stack.last().unwrap().stack_offset - *i,
-                        stack.0.len(),
-                    )),
+                    .unwrap(),
             ),
             SetArg(i) => {
                 let offset_i = call_stack.last().unwrap().stack_offset - 1 - *i;

@@ -24,7 +24,7 @@ Proc fib
         Ret
 End
 
-Push 35
+Push 36
 Call fib
 Print
 
