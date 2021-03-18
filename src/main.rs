@@ -32,6 +32,8 @@ impl Stack {
     }
 }
 
+type Heap = Vec<isize>;
+
 struct StackFrame {
     pub stack_offset: Pointer,
     pub ip: Pointer,
@@ -65,12 +67,16 @@ enum Inst {
     Call(Pointer),
     Ret,
     CollapseRet(Pointer),
+    Store,
+    Load,
+    StoreArr(Pointer),
 }
 
 fn interpret<'a>(program: Program<'a>) {
     use Inst::*;
 
     let mut stack: Stack = Stack(Vec::new());
+    let mut heap: Heap = Heap::new();
     let mut pointer: Pointer = 0;
     let mut call_stack = CallStack::new();
 
@@ -175,9 +181,35 @@ fn interpret<'a>(program: Program<'a>) {
             CollapseRet(p) => {
                 let sf = call_stack.pop().unwrap();
                 let v = stack.pop();
-                *stack.0.get_mut(sf.stack_offset - 1 - *p).unwrap() = v;
                 stack.0.truncate(sf.stack_offset - *p);
+                *stack.0.last_mut().unwrap() = v;
                 pointer = sf.ip;
+            }
+            Store => {
+                let (i, data) = (stack.pop() as usize, stack.pop());
+                if i < heap.len() {
+                    heap[i] = data;
+                } else {
+                    heap.resize(i + 1, 0);
+                    heap[i] = data;
+                }
+            }
+            Load => {
+                let i = stack.pop() as usize;
+                stack.push(heap[i]);
+            }
+            StoreArr(p) => {
+                let len = stack.pop() as usize;
+                let start = stack.0.len() - len as usize;
+
+                if heap.len() <= p + len {
+                    heap.resize(p + len, 0);
+                }
+
+                (0..len).for_each(|i| {
+                    heap[p + i] = stack.0[start + i];
+                });
+                stack.0.truncate(start);
             }
         }
     }
@@ -214,6 +246,9 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Ret"] => Ret,
         ["CollapseRet", p] => CollapseRet(p.parse::<Pointer>().unwrap()),
         ["label", ..] | ["End"] => Noop,
+        ["Store"] => Store,
+        ["Load"] => Load,
+        ["StoreArr", p] => StoreArr(p.parse::<Pointer>().unwrap()),
         l => panic!("Invalid instruction: {:?}", l),
     }
 }

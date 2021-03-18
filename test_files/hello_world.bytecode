@@ -1,68 +1,43 @@
 Proc printStr
-    -- [..., i | ]
-    GetArg 1
-    -- [..., last_char, i | last_char ]
-    PrintC
-    Pop
-    -- [..., last_char, i | ]
-    SetArg 1
-    -- [..., i - 1, i| ]
-    Pop
-    -- [..., i | ]
+    -- [ptr, len]
+    JE finish
     Push 1
-    -- [..., i | 1 ]
     Sub
-    -- [..., i - 1 ]
 
     GetArg 1
-    JE finish
-    JNE continue
+    Load
+    PrintC
+    Pop
+
+    GetArg 1
+    Incr
+    SetArg 1
+    Pop
+
+    Call printStr
 
     label finish
         Ret
-
-    label continue 
-        Call printStr
-        Ret
 End
 
--- \n
-Push 10
-
--- d
+Push 72
+Push 101
+Push 108
+Push 108
+Push 111
+Push 32
+Push 87
+Push 111
+Push 114
+Push 108
 Push 100
 
--- l
-Push 108
+Push 11
+StoreArr 0
 
--- r
-Push 114
-
--- o
-Push 111
-
--- W
-Push 87
-
--- space
-Push 32
-
--- o
-Push 111
-
--- l
-Push 108
-
--- l
-Push 108
-
--- e
-Push 101
-
--- H
-Push 72
-
--- string length
-Push 12
-
+Push 0
+Push 11
 Call printStr
+
+Push 10
+PrintC
