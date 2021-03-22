@@ -52,10 +52,8 @@ enum Inst {
     Jump(Pointer),
     JE(Pointer),
     JNE(Pointer),
-    JGT(Pointer),
-    JLT(Pointer),
-    JGE(Pointer),
-    JLE(Pointer),
+    LT,
+    GT,
     Get(Pointer),
     Set(Pointer),
     GetArg(Pointer),
@@ -120,29 +118,13 @@ fn interpret<'a>(program: Program<'a>) {
                     pointer = *p;
                 }
             }
-            JGT(p) => {
-                if stack.peek() > 0 {
-                    stack.pop();
-                    pointer = *p;
-                }
+            LT => {
+                let (a, b) = (stack.pop(), stack.pop());
+                stack.push((b < a) as isize);
             }
-            JLT(p) => {
-                if stack.peek() < 0 {
-                    stack.pop();
-                    pointer = *p;
-                }
-            }
-            JGE(p) => {
-                if stack.peek() >= 0 {
-                    stack.pop();
-                    pointer = *p;
-                }
-            }
-            JLE(p) => {
-                if stack.peek() <= 0 {
-                    stack.pop();
-                    pointer = *p;
-                }
+            GT => {
+                let (a, b) = (stack.pop(), stack.pop());
+                stack.push((b > a) as isize);
             }
             Get(i) => stack.push(
                 *stack
@@ -230,10 +212,8 @@ fn parse_instruction(s: &[&str], labels: &Labels, procedures: &Procedures) -> In
         ["Jump", l] => Jump(*labels.get(l).unwrap()),
         ["JE", l] => JE(*labels.get(l).unwrap()),
         ["JNE", l] => JNE(*labels.get(l).unwrap()),
-        ["JGE", l] => JGE(*labels.get(l).unwrap()),
-        ["JLE", l] => JLE(*labels.get(l).unwrap()),
-        ["JGT", l] => JGT(*labels.get(l).unwrap()),
-        ["JLT", l] => JLT(*labels.get(l).unwrap()),
+        ["LT"] => LT,
+        ["GT"] => GT,
         ["Get", p] => Get(p.parse::<Pointer>().unwrap()),
         ["Set", p] => Set(p.parse::<Pointer>().unwrap()),
         ["GetArg", p] => GetArg(p.parse::<Pointer>().unwrap()),
