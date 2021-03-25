@@ -1,6 +1,12 @@
+# TinyVM
+
 An MVP stack-based bytecode VM
 
-Runs a very simple instruction set and is Turing Complete.
+This VM runs a simplistic, Turing complete instruction set.
+
+In ~250 LOC with extensive comments, it's meant to be simple to understand and easily reproducible in languages other than Rust.
+
+It also includes a rudimentary compiler which can execute programs in the `test_files` folder.
 
 ## Instructions
 
@@ -42,3 +48,45 @@ In `test_files/`:
 `fib.bytecode` prints the first 40 fibonacci numbers
 
 `fib_recurse.bytecode` recursively calculates 35th fibonacci number
+
+### Sum
+```
+Push 0
+Push 0
+
+label loop
+-- [accumulator, index]
+Get 0
+Get 2
+-- [accumulator, index, accumulator, index]
+Add
+-- [accumulator, index, accumulator + index]
+Set 2
+Pop
+-- [accumulator + index, index]
+
+-- [accumulator, index]
+-- adds one to index
+Push 1
+Add
+-- [accumulator, index + 1]
+
+-- [accumulator, index]
+Get 0
+Push 100
+Sub
+-- [accumulator, index, index - 1000]
+JNE loop
+Pop
+
+Get 1
+Print
+Push 10
+PrintC
+```
+
+```
+> cargo run --release sum.bytecode
+4950
+>
+```

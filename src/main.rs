@@ -349,7 +349,8 @@ fn interpret<'a>(program: Program<'a>) {
 // The next instructions aren't really part of the VM, they are essentially
 // an extremely simplistic compiler. That's because the VM doesn't quite
 // support labels. It doesn't support named procedures either; it specifies
-// for procedures that contain an index into the Instruction list.
+// for procedures that contain an index into the Instruction list. Additionally,
+// this simplistic compiler allows for some basic comments.
 
 // `parse_instruction` takes a line split by spaces and returns a singular
 // instruction that the line represents.
