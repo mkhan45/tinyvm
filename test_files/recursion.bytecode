@@ -7,7 +7,7 @@ Proc factorial
     Sub
     -- [x, x - 1]
     Call factorial
-    -- [x, factorial(x - 1)]
+    -- [x, factorial(x - 1)]                                           
     Mul
     Ret
 
