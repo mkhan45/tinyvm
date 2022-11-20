@@ -155,7 +155,7 @@ fn interpret<'a>(program: Program<'a>) {
             // the result.
             //
             // Before:
-            // [.., a, b]
+            // [.., b, a]
             //
             // After:
             // [.., a + b]
@@ -171,7 +171,7 @@ fn interpret<'a>(program: Program<'a>) {
             // usually reasoned about from left to right.
             //
             // Before:
-            // [.., a, b]
+            // [.., b, a]
             //
             // After:
             // [.., b - a]
@@ -183,7 +183,7 @@ fn interpret<'a>(program: Program<'a>) {
             // I think you can figure out Mul and Div
             Mul => {
                 let (a, b) = (stack.pop(), stack.pop());
-                stack.push(a * b)
+                stack.push(a * b) 
             }
             Div => {
                 let (a, b) = (stack.pop(), stack.pop());
@@ -209,7 +209,7 @@ fn interpret<'a>(program: Program<'a>) {
             //
             // Example:
             //
-            // PrintStack -- [.., a, b]
+            // PrintStack -- [.., b, a]
             // Sub
             // PrintStack -- [.., b - a] // this will be zero if a and b are equal
             // JE i // jumps to Instruction i if a and b were equal.
