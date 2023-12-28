@@ -1,5 +1,11 @@
 # TinyVM
 
+This version is supposed to be faster via direct threading but it doesn't get TCO'd
+
+Also https://pliniker.github.io/post/dispatchers/
+
+___ 
+
 An MVP stack-based bytecode VM
 
 This VM runs a simplistic, Turing complete instruction set.
